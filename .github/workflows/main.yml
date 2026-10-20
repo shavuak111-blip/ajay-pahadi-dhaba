@@ -18,6 +18,7 @@ jobs:
             echo "ERROR: ZIP file not found"
             exit 1
           fi
+
           mkdir -p project
           unzip -q "$ZIP_FILE" -d project
 
@@ -27,16 +28,16 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Locate project and create debug keystore
+      - name: Locate Android project and generate debug keystore
         run: |
-          SETTINGS=$(find project -type f \( -name settings.gradle -o -name settings.gradle.kts \) | head -n 1)
-          if [ -z "$SETTINGS" ]; then
-            echo "ERROR: settings.gradle(.kts) not found"
-            find project -maxdepth 5 -type f | head -n 100
+          GRADLEW_PATH=$(find project -type f -name gradlew | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "ERROR: gradlew not found anywhere in extracted project"
+            find project -maxdepth 6 -type f | head -n 200
             exit 1
           fi
 
-          PROJECT_DIR=$(dirname "$SETTINGS")
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
           keytool -genkeypair -v \
