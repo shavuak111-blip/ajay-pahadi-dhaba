@@ -1,6 +1,59 @@
-      - name: Build APK
+name: Build Ajay Pahadi Dhaba APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Find and extract ZIP
+        run: |
+          ZIP_FILE=$(find . -maxdepth 1 -type f -iname "*.zip" | head -n 1)
+
+          if [ -z "$ZIP_FILE" ]; then
+            echo "ERROR: ZIP file not found"
+            exit 1
+          fi
+
+          mkdir -p project
+          unzip -q "$ZIP_FILE" -d project
+
+          echo "ZIP extracted successfully"
+          find project -maxdepth 4 -type f | head -n 100
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Gradle
         run: |
           sudo apt-get update
           sudo apt-get install -y gradle
-          cd project
-          gradle assembleDebug
+
+      - name: Build APK
+        run: |
+          BUILD_FILE=$(find project -name settings.gradle.kts -type f | head -n 1)
+
+          if [ -z "$BUILD_FILE" ]; then
+            echo "ERROR: settings.gradle.kts not found"
+            exit 1
+          fi
+
+          PROJECT_DIR=$(dirname "$BUILD_FILE")
+          cd "$PROJECT_DIR"
+
+          gradle assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ajay-Pahadi-Dhaba-APK
+          path: project/**/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
