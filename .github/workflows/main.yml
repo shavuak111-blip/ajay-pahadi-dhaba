@@ -11,20 +11,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract Android project ZIP
+      - name: Extract Android project
         run: |
           ZIP_FILE=$(find . -maxdepth 1 -type f -iname "*.zip" | head -n 1)
-
           if [ -z "$ZIP_FILE" ]; then
-            echo "ERROR: ZIP file not found in repository"
+            echo "ERROR: ZIP file not found"
             exit 1
           fi
-
           mkdir -p project
           unzip -q "$ZIP_FILE" -d project
-
-          echo "Extracted files:"
-          find project -maxdepth 4 -type f | head -n 100
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -32,25 +27,37 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Find Android project
+      - name: Locate project and create debug keystore
         run: |
           SETTINGS=$(find project -type f \( -name settings.gradle -o -name settings.gradle.kts \) | head -n 1)
-
           if [ -z "$SETTINGS" ]; then
-            echo "ERROR: Android Gradle settings file not found"
+            echo "ERROR: settings.gradle(.kts) not found"
+            find project -maxdepth 5 -type f | head -n 100
             exit 1
           fi
 
           PROJECT_DIR=$(dirname "$SETTINGS")
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-          echo "Android project found at: $PROJECT_DIR"
 
-      - name: Build APK
+          keytool -genkeypair -v \
+            -keystore "$PROJECT_DIR/debug.keystore" \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Install Gradle
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gradle
+
+      - name: Build debug APK
         run: |
           cd "$PROJECT_DIR"
+          gradle --version
           gradle assembleDebug --no-daemon
 
       - name: Upload APK
