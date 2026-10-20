@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "472647395945",
+    "project_id": "ajay-pahadi-dhaba",
+    "storage_bucket": "ajay-pahadi-dhaba.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:472647395945:android:46a813cd3b140d444090f8",
+        "android_client_info": {
+          "package_name": "com.aistudio.ajaydhaba.zpxrvk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVk0gNGqiAqUpRSsLOX-AoLaAdwXcMYuk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
